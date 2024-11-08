@@ -1,0 +1,165 @@
+#centralwidget{
+    Background-color: #1a2e46;
+}
+
+#LeftBottomCheckBox{
+    background-color:transparent;
+}
+
+#LeftFrame, #RightFrame{
+    Background-color: #26405d;
+    border-radius: 60px;
+    border: 1px solid #26405d;
+}
+
+#LeftTopFrameLbl{
+    font-size: 24px;
+    font-family: Roboto;
+    color: #ffda5c;
+    font-weight: bold;
+    background-color: transparent;
+    border: none;
+}
+
+#LeftBottomCheckBoxLbl{
+    background-color: transparent;
+    border: none;
+    color: white;
+}
+
+#RightTopFrameLbl{
+    font-size: 24px;
+    font-family: Roboto;
+    color: #ffda5c;
+    font-weight: bold;
+}
+
+#LoadFileBtn[clicked="true"], #LoadTblBtn[clicked="true"]{
+    background-color: #253654;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 9px;
+    color: #ffef59;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#LoadFileBtn:hover[clicked="true"], #LoadTblBtn:hover[clicked="true"]{
+    background-color: #43b5d4;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#253654;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 9px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#LoadFileBtn::pressed[clicked="true"], #LoadTblBtn::pressed[clicked="true"]{
+    background-color: #3c82a2;
+    border-style: inset;
+    border-color: #43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 9px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#LoadFileBtn[clicked="false"], #LoadTblBtn[clicked="false"]{
+    background-color: #253654;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 14px;
+    color: #ffef59;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#LoadFileBtn:hover[clicked="false"], #LoadTblBtn:hover[clicked="false"]{
+    background-color: #43b5d4;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#253654;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 14px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#LoadFileBtn::pressed[clicked="false"], #LoadTblBtn::pressed[clicked="false"]{
+    background-color: #3c82a2;
+    border-style: inset;
+    border-color: #43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 14px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#PickFileBtn, #LeftTopFrameLoadBtn, #LoadBaseTbl{
+    background-color: #253654;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 12px;
+    color: #ffef59;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#PickFileBtn:hover, #LeftTopFrameLoadBtn:hover, #LoadBaseTbl:hover{
+    background-color: #43b5d4;
+    border-style: outset;
+    border-width: 1px;
+    border-color:#253654;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 12px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#PickFileBtn::pressed, #LeftTopFrameLoadBtn::pressed, #LoadBaseTbl::pressed{
+    background-color: #3c82a2;
+    border-style: inset;
+    border-color: #43b5d4;
+    border-radius: 10px;
+    font-family: Helvetica;
+    font: bold 12px;
+    color: #253654;
+    min-width: 10em;
+    padding: 6px;
+}
+
+#RightTopFrameNote{
+    font-size: 10px;
+    font-family: Roboto;
+    color: white;
+    font-weight: bold;
+    background-color: transparent;
+    border: none;
+}
+
+#RightBottomLogBox{
+    background-color: #2e4b6a;
+    border: 1px solid black;
+    font-size: 14px;
+    color: white;
+}
