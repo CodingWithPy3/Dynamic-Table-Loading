@@ -1,13 +1,28 @@
+import os.path
+
 from PyQt5.QtWidgets import QMainWindow, QFrame, QMenu, QMenuBar, QVBoxLayout, QAction, QWidget, \
     QPushButton, QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QTextEdit, QCheckBox, QFileDialog, \
-    QMessageBox
+    QMessageBox, qApp, QDialog, QLineEdit
 from PyQt5.QtCore import Qt, QRect, QMetaObject, QCoreApplication, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap, QTextCursor, QTextCharFormat, QFont, QColor
 from time import sleep
-
+import secureInfo
 
 class QueryExecutor(QThread):
+    """
+    # Upload the DataFrame to the existing Snowflake table
+    # The table should already exist in the schema
+    success, nchunks, nrows, _ = write_pandas(conn, df, snowflake_table)
+
+    if success:
+        print(f"Successfully loaded {nrows} rows into {snowflake_schema}.{snowflake_table}")
+    else:
+        print("Failed to load data into Snowflake")
+
+    """
+
     query_completion = pyqtSignal(int)
+    folder_error = pyqtSignal()
 
     def __init__(self):
         super(QueryExecutor, self).__init__()
@@ -15,14 +30,26 @@ class QueryExecutor(QThread):
         self.QueryNo = 0
 
     def run(self):
+        print('In Query Executer class')
 
-        for _ in range(self.TotalQuery):
-            self.QueryNo += 1
-            # self.query_completion.emit(1)
-            # print(f"Executing query {self.QueryNo} out of 3")
-            sleep(4)  # Simulating a delay for the query execution
-            self.query_completion.emit(self.QueryNo)
-            sleep(1)
+        try:
+            EncryptedPwd = secureInfo.read_from_file(file_path)
+            print(EncryptedPwd)
+            decryptedPwd = secureInfo.decrypt_string(encrypted_data=EncryptedPwd)
+            print(decryptedPwd)
+
+        except:
+            print("Except block")
+            self.folder_error.emit()
+
+        else:
+            for _ in range(self.TotalQuery):
+                self.QueryNo += 1
+                # self.query_completion.emit(1)
+                # print(f"Executing query {self.QueryNo} out of 3")
+                sleep(4)  # Simulating a delay for the query execution
+                self.query_completion.emit(self.QueryNo)
+                sleep(1)
 
 
 class Logger(QThread):
@@ -36,6 +63,47 @@ class Logger(QThread):
             sleep(2)
             self.message.emit("Executing the query...")
             # print("Executing the query logger class...")
+
+
+class UpdatePasswordDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle('Update Password')
+        self.setGeometry(100, 100, 300, 150)
+        self.setFixedSize(400, 150)
+        layout = QVBoxLayout()
+
+        self.label = QLabel('Enter new password:')
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+
+        self.update_button = QPushButton('Update')
+        self.update_button.clicked.connect(self.update_password)
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.password_input)
+        layout.addWidget(self.update_button)
+
+        self.setLayout(layout)
+
+    def update_password(self):
+        if not os.path.exists(file_path):
+            os.mkdir(file_path.split('/')[0])
+
+        newPassword = self.password_input.text()
+        if len(newPassword) != 0:
+            encryptedPwd = secureInfo.encrypt_string(newPassword)
+            success = secureInfo.save_to_file(file_path, encryptedPwd)
+            if success:
+                QMessageBox.Information(self, "Update Password", "Password Updated Successfully")
+            else:
+                QMessageBox.warning(self, "Warning", "Unable to update the Password")
+
+            # self.accept()  # Close the dialog
+            pass
+        else:
+            QMessageBox.warning(self, "Warning", "Please Enter the Password")
 
 
 class Ui_MainWindow(QMainWindow):
@@ -216,6 +284,10 @@ class Ui_MainWindow(QMainWindow):
         self.CentralWidget_VL.addWidget(self.MainFrame)
         self.setCentralWidget(self.centralwidget)
 
+        # --------------------------------------------------------------------------------------------------- #
+        # -------------------------------------------- MENU BAR --------------------------------------------- #
+        # --------------------------------------------------------------------------------------------------- #
+
         self.menubar = QMenuBar(self)
         self.menubar.setGeometry(QRect(0, 0, 550, 18))
         self.menubar.setObjectName("menubar")
@@ -224,14 +296,22 @@ class Ui_MainWindow(QMainWindow):
         self.menuSettings = QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
         self.setMenuBar(self.menubar)
+
         self.actionExit = QAction(self)
         self.actionExit.setObjectName("actionExit")
+        self.actionExit.triggered.connect(self.CloseApp)
+
         self.actionUpdatePassword = QAction(self)
         self.actionUpdatePassword.setObjectName("actionUpdatePassword")
+        self.actionUpdatePassword.triggered.connect(self.UpdateSFPassword)
+
         self.menuFile.addAction(self.actionExit)
         self.menuSettings.addAction(self.actionUpdatePassword)
+
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
+
+        # --------------------------------------------------------------------------------------------------- #
 
         self.MainFrame_HL.setContentsMargins(0, 0, 0, 0)
         self.LeftFrameVL.setContentsMargins(0, 0, 0, 0)
@@ -245,6 +325,8 @@ class Ui_MainWindow(QMainWindow):
         self.RightTopFrameLbl.setContentsMargins(40, 10, 0, 0)
 
         self.InitialLayoutSetting()
+        self.query_executor = QueryExecutor()
+        self.log = Logger()
 
         # -----Left Side Functions
         self.LoadFileBtn.clicked.connect(self.LoadFile)
@@ -356,25 +438,38 @@ class Ui_MainWindow(QMainWindow):
     def LoadReportTables(self):
         if not self.LeftBottomCheckBox.isChecked():
             print('Checked')
-            self.query_executor = QueryExecutor()
-            self.log = Logger()
-
             self.query_executor.start()
-            # self.query_executor.started.connect(self.startThread)
-            self.log.start()
-            self.log.message.connect(self.logMessage)
-            self.query_executor.query_completion.connect(self.appendlog)
+            self.query_executor.started.connect(self.startThread)
             self.query_executor.finished.connect(self.endThread)
+            self.query_executor.query_completion.connect(self.appendlog)
+            self.query_executor.folder_error.connect(self.FolderError)
+
+            self.log.message.connect(self.logMessage)
 
         else:
             QMessageBox.warning(self, "Warning", "Staging tables are not loaded. Please load staging tables before "
                                                  "proceeding with base table loading.")
+
+    def FolderError(self):
+        self.log.requestInterruption()
+        self.log.wait()
+        self.log.quit()
+        self.query_executor.quit()
+        reply = QMessageBox.question(self, "Error", "Configuration file does not exists. Click on Yes to Update "
+                                                    "the Password.", QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.Yes)
+
+        if reply == QMessageBox.Yes:
+            dialog = UpdatePasswordDialog(self)
+            dialog.setWindowModality(Qt.ApplicationModal)
+            dialog.exec_()
 
     def logMessage(self, message):
         self.RightBottomLogBox.append(message)
 
     def startThread(self):
         print("Query Thread Started")
+        self.log.start()
 
     def endThread(self):
         print("Query Thread Ended")
@@ -387,8 +482,23 @@ class Ui_MainWindow(QMainWindow):
         self.RightBottomLogBox.append(f"Completed {a} out of 3")
         print(f'Completed emit')
 
+    def CloseApp(self):
+        reply = QMessageBox.question(self, "Confirm Exit", "Are you sure you want to exit?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            qApp.quit()
+
+    def UpdateSFPassword(self):
+        dialog = UpdatePasswordDialog(self)
+        dialog.setWindowModality(Qt.ApplicationModal)
+        dialog.exec_()
+
+
 if __name__ == "__main__":
     import sys
+
+    global file_path
+    file_path = 'EncryptedData/config.txt'
 
     app = QApplication(sys.argv)
     ui = Ui_MainWindow()
